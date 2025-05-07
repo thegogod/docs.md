@@ -2,8 +2,8 @@ package build
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/thegogod/docs.md/core"
 	"github.com/thegogod/docs.md/core/manifest"
 	"github.com/thegogod/docs.md/markdown"
 	"github.com/urfave/cli/v3"
@@ -16,13 +16,13 @@ var Cmd = &cli.Command{
 	ReadArgsFromStdin: true,
 	Action: func(ctx context.Context, cmd *cli.Command) error {
 		path := cmd.Args().First()
+		engine := ctx.Value("engine").(core.Engine)
 		manifest, err := manifest.Load(path)
 
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(manifest.String())
 		node, err := markdown.Read(path)
 
 		if err != nil {
@@ -33,7 +33,10 @@ var Cmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println(node.String())
+		if err = engine.Render(node, manifest); err != nil {
+			return err
+		}
+
 		return nil
 	},
 }
