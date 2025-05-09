@@ -7,8 +7,15 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 )
 
-var Markdown = goldmark.New(
-	goldmark.WithExtensions(extension.GFM),
+var Parser = goldmark.New(
+	goldmark.WithExtensions(
+		extension.GFM,
+		extension.Table,
+		extension.Strikethrough,
+		extension.TaskList,
+		extension.Linkify,
+		extension.Typographer,
+	),
 	goldmark.WithParserOptions(
 		parser.WithAutoHeadingID(),
 	),

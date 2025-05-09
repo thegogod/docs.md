@@ -3,8 +3,13 @@ package core
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"maps"
+
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/util"
 )
 
 type Component struct {
@@ -18,6 +23,13 @@ type Component struct {
 
 func (self Component) Select(tag string) bool {
 	return self.Selector == tag
+}
+
+func (self *Component) Extend(markdown goldmark.Markdown) {
+	fmt.Println("extend...")
+	markdown.Renderer().AddOptions(renderer.WithNodeRenderers(
+		util.Prioritized(nil, 200),
+	))
 }
 
 func (self *Component) Import(parent *template.Template) error {

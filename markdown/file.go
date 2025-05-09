@@ -24,7 +24,7 @@ func (self File) GetNodes() []Node {
 func (self File) Render() ([]byte, error) {
 	var buf bytes.Buffer
 
-	if err := Markdown.Convert(self.Src, &buf); err != nil {
+	if err := Parser.Convert(self.Src, &buf); err != nil {
 		return nil, err
 	}
 

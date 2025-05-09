@@ -3,3 +3,6 @@ version = "0.0.0"
 
 [build]
 outdir = "dist"
+
+[plugins]
+std = {}
