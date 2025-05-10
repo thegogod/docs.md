@@ -37,7 +37,7 @@ func (self *Component) Import(plugin string, parent *template.Template) (*templa
 		funcs[name] = fn
 	}
 
-	template, err := parent.New(fmt.Sprintf("%s->%s", plugin, self.Name)).
+	template, err := parent.New(fmt.Sprintf("%s::%s", plugin, self.Name)).
 		Funcs(funcs).
 		Parse(self.Template)
 

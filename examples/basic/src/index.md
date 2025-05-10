@@ -2,4 +2,4 @@
 
 {{ template "header.md" }}
 
-{{ template "std->button" }}
+{{ template "std::button" }}
