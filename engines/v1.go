@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/thegogod/docs.md/core"
 	"github.com/thegogod/docs.md/core/manifest"
@@ -17,8 +16,7 @@ import (
 )
 
 type V1Engine struct {
-	plugins  []*core.Plugin
-	template *template.Template
+	plugins []*core.Plugin
 }
 
 func V1(plugins ...*core.Plugin) *V1Engine {
@@ -34,7 +32,7 @@ func V1(plugins ...*core.Plugin) *V1Engine {
 		plugin.Extend(markdown.Parser)
 	}
 
-	return &V1Engine{plugins, template.New("main")}
+	return &V1Engine{plugins}
 }
 
 func (self V1Engine) GetPlugins() []*core.Plugin {
@@ -59,41 +57,27 @@ func (self *V1Engine) AddPlugin(plugin *core.Plugin) *V1Engine {
 	return self
 }
 
-func (self V1Engine) Render(node markdown.Node, manifest manifest.Manifest) error {
+func (self *V1Engine) Parse(manifest manifest.Manifest) (*template.Template, error) {
+	return template.ParseGlob(filepath.Join(manifest.Build.SrcDir, "*.md"))
+}
+
+func (self V1Engine) Render(manifest manifest.Manifest) error {
+	template, err := self.Parse(manifest)
+
+	if err != nil {
+		return err
+	}
+
 	for _, plugin := range self.plugins {
 		if args, exists := manifest.Plugins[plugin.Name]; exists {
-			if err := plugin.Import(self.template, args); err != nil {
+			if err := plugin.Import(template, args); err != nil {
 				return err
 			}
 		}
 	}
 
-	if dir, ok := node.(markdown.Directory); ok {
-		for _, child := range dir.GetNodes() {
-			if err := self.Render(child, manifest); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	fmt.Printf("%s => parsing...\n", node.GetPath())
-	data, err := node.(markdown.File).Render()
-
-	if err != nil {
-		return err
-	}
-
-	template, err := self.template.New(node.GetName()).Parse(string(data))
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%s => rendering...\n", node.GetPath())
 	var md bytes.Buffer
-	err = template.Execute(&md, map[string]any{})
+	err = template.ExecuteTemplate(&md, "index.md", map[string]any{})
 
 	if err != nil {
 		return err
@@ -105,15 +89,8 @@ func (self V1Engine) Render(node markdown.Node, manifest manifest.Manifest) erro
 		return err
 	}
 
-	outpath := filepath.Join(manifest.Build.OutDir, strings.Replace(
-		node.GetPath(),
-		manifest.Build.SrcDir,
-		"",
-		1,
-	))
-
-	htmlpath := strings.TrimSuffix(outpath, ".md") + ".html"
-	fmt.Printf("%s => writing...\n", htmlpath)
+	outpath := filepath.Join(manifest.Build.OutDir, "index.html")
+	fmt.Printf("%s => writing...\n", outpath)
 
 	if _, err := os.Stat(filepath.Dir(outpath)); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -126,7 +103,7 @@ func (self V1Engine) Render(node markdown.Node, manifest manifest.Manifest) erro
 	}
 
 	return os.WriteFile(
-		htmlpath,
+		outpath,
 		html.Bytes(),
 		0644,
 	)

@@ -1,6 +1,9 @@
 package markdown
 
-import "fmt"
+import (
+	"fmt"
+	"html/template"
+)
 
 type Node interface {
 	fmt.Stringer
@@ -9,4 +12,6 @@ type Node interface {
 	GetRelPath() string
 	GetName() string
 	GetNodes() []Node
+
+	Parse(template *template.Template) (*template.Template, error)
 }

@@ -3,6 +3,7 @@ package markdown
 import (
 	"bytes"
 	"encoding/json"
+	"html/template"
 	"time"
 )
 
@@ -39,6 +40,11 @@ func (self File) Render() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (self File) Parse(template *template.Template) (*template.Template, error) {
+	_, err := template.New(self.Name).Parse(string(self.Src))
+	return template, err
 }
 
 func (self File) String() string {

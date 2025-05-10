@@ -1,6 +1,9 @@
 package markdown
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"html/template"
+)
 
 type Directory struct {
 	Path    string `json:"path"`
@@ -28,6 +31,18 @@ func (self Directory) GetNodes() []Node {
 func (self *Directory) Add(nodes ...Node) *Directory {
 	self.Nodes = append(self.Nodes, nodes...)
 	return self
+}
+
+func (self Directory) Parse(template *template.Template) (*template.Template, error) {
+	for _, node := range self.Nodes {
+		_, err := node.Parse(template)
+
+		if err != nil {
+			return template, err
+		}
+	}
+
+	return template, nil
 }
 
 func (self Directory) String() string {
