@@ -3,19 +3,15 @@ package core
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"maps"
 
 	"github.com/yuin/goldmark"
-	gast "github.com/yuin/goldmark/ast"
 )
 
-var KindComponent = gast.NewNodeKind("Component")
-
 type Component struct {
-	gast.BaseInline
-
-	Selector  string                                    `json:"selector"`
+	Name      string                                    `json:"name"`
 	Template  string                                    `json:"template,omitempty"`
 	Assets    []string                                  `json:"assets,omitempty"`
 	Functions map[string]func(args ...any) (any, error) `json:"-"`
@@ -24,25 +20,29 @@ type Component struct {
 }
 
 func (self Component) Select(tag string) bool {
-	return self.Selector == tag
+	return self.Name == tag
 }
 
 func (self *Component) Extend(markdown goldmark.Markdown) {
 }
 
-func (self *Component) Import(parent *template.Template) error {
+func (self *Component) Import(plugin string, parent *template.Template) (*template.Template, error) {
+	if self.template != nil {
+		return self.template, nil
+	}
+
 	funcs := template.FuncMap{}
 
 	for name, fn := range self.Functions {
 		funcs[name] = fn
 	}
 
-	template, err := parent.New(self.Selector).
+	template, err := parent.New(fmt.Sprintf("%s->%s", plugin, self.Name)).
 		Funcs(funcs).
 		Parse(self.Template)
 
 	self.template = template
-	return err
+	return template, err
 }
 
 func (self Component) Render(context Context) ([]byte, error) {
@@ -59,21 +59,3 @@ func (self Component) Render(context Context) ([]byte, error) {
 
 	return buffer.Bytes(), nil
 }
-
-// func (self *Component) Parse(parent ast.Node, block text.Reader, pc parser.Context) ast.Node {
-
-// }
-
-// func (self *Component) Kind() gast.NodeKind {
-// 	return KindComponent
-// }
-
-// func (self *Component) Dump(source []byte, level int) {
-// 	data := map[string]string{
-// 		"selector": self.Selector,
-// 		"template": self.Template,
-// 		"assets":   strings.Join(self.Assets, ", "),
-// 	}
-
-// 	gast.DumpHelper(self, source, level, data, nil)
-// }

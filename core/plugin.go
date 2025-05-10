@@ -26,7 +26,7 @@ func (self *Plugin) Import(template *template.Template, args collections.Diction
 	template = template.New(self.Name)
 
 	for _, component := range self.Components {
-		if err := component.Import(template); err != nil {
+		if _, err := component.Import(self.Name, template); err != nil {
 			return err
 		}
 	}
@@ -56,7 +56,3 @@ func (self *Plugin) Extend(markdown goldmark.Markdown) {
 		component.Extend(markdown)
 	}
 }
-
-// func (self *Plugin) RegisterFuncs(r renderer.NodeRendererFuncRegisterer) {
-// 	r.Register(east.KindEmoji, r.renderEmoji)
-// }
