@@ -3,18 +3,28 @@ package markdown
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func ReadDir(path string) (Node, error) {
+func ReadDir(base string, path string) (Node, error) {
 	info, err := os.Stat(path)
 
 	if err != nil {
 		return nil, err
 	}
 
+	cwd, _ := os.Getwd()
+	relpath, err := filepath.Rel(cwd, path)
+
+	if err != nil {
+		return nil, err
+	}
+
 	dir := Directory{
-		Name:  info.Name(),
-		Nodes: []Node{},
+		Path:    path,
+		RelPath: strings.Replace(relpath, base, "", 1),
+		Name:    info.Name(),
+		Nodes:   []Node{},
 	}
 
 	entries, err := os.ReadDir(path)
@@ -24,7 +34,7 @@ func ReadDir(path string) (Node, error) {
 	}
 
 	for _, entry := range entries {
-		node, err := Read(filepath.Join(path, entry.Name()))
+		node, err := Read(base, filepath.Join(path, entry.Name()))
 
 		if err != nil {
 			return nil, err

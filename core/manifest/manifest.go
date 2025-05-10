@@ -19,6 +19,7 @@ func Load(path string) (Manifest, error) {
 	value := Manifest{
 		Build: Build{
 			OutDir: "dist",
+			SrcDir: "src",
 		},
 		Plugins: map[string]collections.Dictionary{},
 	}
@@ -27,6 +28,8 @@ func Load(path string) (Manifest, error) {
 		return value, err
 	}
 
+	value.Build.OutDir = filepath.Join(path, value.Build.OutDir)
+	value.Build.SrcDir = filepath.Join(path, value.Build.SrcDir)
 	return value, nil
 }
 
@@ -34,3 +37,8 @@ func (self Manifest) String() string {
 	b, _ := json.MarshalIndent(self, "", "  ")
 	return string(b)
 }
+
+// a + b = c
+// a: /users/aacebo/echo/src/index.md
+// b: /users/aacebo/echo/dist
+// c: /users/aacebo/echo/dist/index.md

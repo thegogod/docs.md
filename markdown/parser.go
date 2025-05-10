@@ -22,5 +22,6 @@ var Parser = goldmark.New(
 	goldmark.WithRendererOptions(
 		html.WithHardWraps(),
 		html.WithXHTML(),
+		html.WithUnsafe(),
 	),
 )

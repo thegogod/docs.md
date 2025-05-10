@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func Read(path string) (Node, error) {
+func Read(base string, path string) (Node, error) {
 	info, err := os.Stat(path)
 
 	if err != nil {
@@ -12,8 +12,8 @@ func Read(path string) (Node, error) {
 	}
 
 	if info.IsDir() {
-		return ReadDir(path)
+		return ReadDir(base, path)
 	}
 
-	return ReadFile(path)
+	return ReadFile(base, path)
 }

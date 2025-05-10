@@ -1,9 +1,14 @@
 package engines
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
+	"os"
+	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/thegogod/docs.md/core"
 	"github.com/thegogod/docs.md/core/manifest"
@@ -63,7 +68,66 @@ func (self V1Engine) Render(node markdown.Node, manifest manifest.Manifest) erro
 		}
 	}
 
-	fmt.Println(node.String())
-	fmt.Println(manifest.String())
-	return nil
+	if dir, ok := node.(markdown.Directory); ok {
+		for _, child := range dir.GetNodes() {
+			if err := self.Render(child, manifest); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	fmt.Printf("%s => parsing...\n", node.GetPath())
+	data, err := node.(markdown.File).Render()
+
+	if err != nil {
+		return err
+	}
+
+	template, err := self.template.New(node.GetName()).Parse(string(data))
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%s => rendering...\n", node.GetPath())
+	var md bytes.Buffer
+	err = template.Execute(&md, map[string]any{})
+
+	if err != nil {
+		return err
+	}
+
+	var html bytes.Buffer
+
+	if err := markdown.Parser.Convert(md.Bytes(), &html); err != nil {
+		return err
+	}
+
+	outpath := filepath.Join(manifest.Build.OutDir, strings.Replace(
+		node.GetPath(),
+		manifest.Build.SrcDir,
+		"",
+		1,
+	))
+
+	htmlpath := strings.TrimSuffix(outpath, ".md") + ".html"
+	fmt.Printf("%s => writing...\n", htmlpath)
+
+	if _, err := os.Stat(filepath.Dir(outpath)); err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+
+		if err := os.MkdirAll(filepath.Dir(outpath), 0777); err != nil {
+			return err
+		}
+	}
+
+	return os.WriteFile(
+		htmlpath,
+		html.Bytes(),
+		0644,
+	)
 }

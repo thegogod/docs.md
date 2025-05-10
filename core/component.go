@@ -3,16 +3,18 @@ package core
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"html/template"
 	"maps"
 
 	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/renderer"
-	"github.com/yuin/goldmark/util"
+	gast "github.com/yuin/goldmark/ast"
 )
 
+var KindComponent = gast.NewNodeKind("Component")
+
 type Component struct {
+	gast.BaseInline
+
 	Selector  string                                    `json:"selector"`
 	Template  string                                    `json:"template,omitempty"`
 	Assets    []string                                  `json:"assets,omitempty"`
@@ -26,10 +28,6 @@ func (self Component) Select(tag string) bool {
 }
 
 func (self *Component) Extend(markdown goldmark.Markdown) {
-	fmt.Println("extend...")
-	markdown.Renderer().AddOptions(renderer.WithNodeRenderers(
-		util.Prioritized(nil, 200),
-	))
 }
 
 func (self *Component) Import(parent *template.Template) error {
@@ -61,3 +59,21 @@ func (self Component) Render(context Context) ([]byte, error) {
 
 	return buffer.Bytes(), nil
 }
+
+// func (self *Component) Parse(parent ast.Node, block text.Reader, pc parser.Context) ast.Node {
+
+// }
+
+// func (self *Component) Kind() gast.NodeKind {
+// 	return KindComponent
+// }
+
+// func (self *Component) Dump(source []byte, level int) {
+// 	data := map[string]string{
+// 		"selector": self.Selector,
+// 		"template": self.Template,
+// 		"assets":   strings.Join(self.Assets, ", "),
+// 	}
+
+// 	gast.DumpHelper(self, source, level, data, nil)
+// }

@@ -7,10 +7,20 @@ import (
 )
 
 type File struct {
+	Path      string    `json:"path"`
+	RelPath   string    `json:"rel_path"`
 	Name      string    `json:"name"`
 	Size      int64     `json:"size"`
 	Src       []byte    `json:"content"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (self File) GetPath() string {
+	return self.Path
+}
+
+func (self File) GetRelPath() string {
+	return self.RelPath
 }
 
 func (self File) GetName() string {

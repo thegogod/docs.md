@@ -56,3 +56,7 @@ func (self *Plugin) Extend(markdown goldmark.Markdown) {
 		component.Extend(markdown)
 	}
 }
+
+// func (self *Plugin) RegisterFuncs(r renderer.NodeRendererFuncRegisterer) {
+// 	r.Register(east.KindEmoji, r.renderEmoji)
+// }
