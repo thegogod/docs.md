@@ -1,5 +1,7 @@
 # Index
 
-{{ template "header.md" }}
+{{ template "header" }}
 
 {{ template "std::button" }}
+
+{{ template "footer/footer" }}

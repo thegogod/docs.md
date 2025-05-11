@@ -37,8 +37,3 @@ func (self Manifest) String() string {
 	b, _ := json.MarshalIndent(self, "", "  ")
 	return string(b)
 }
-
-// a + b = c
-// a: /users/aacebo/echo/src/index.md
-// b: /users/aacebo/echo/dist
-// c: /users/aacebo/echo/dist/index.md

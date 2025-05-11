@@ -6,11 +6,11 @@ import (
 	"os"
 
 	"github.com/thegogod/docs.md/commands"
-	"github.com/thegogod/docs.md/engines"
+	v1 "github.com/thegogod/docs.md/engines/v1"
 )
 
 func main() {
-	engine := engines.V1()
+	engine := v1.New()
 	context := context.WithValue(context.Background(), "engine", engine)
 
 	if err := commands.Root.Run(context, os.Args); err != nil {
